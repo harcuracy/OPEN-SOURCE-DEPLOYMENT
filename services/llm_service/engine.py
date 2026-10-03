@@ -130,25 +130,41 @@ class MultiModelEngine:
     ) -> Dict[str, Any]:
         """Runs chat completion against the specified model."""
         llm = self.load_model(model_name)
-        prompt = self.format_prompt(messages)
 
-        output = llm(
-            prompt,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            stop=["<<USER>>", "<<SYSTEM>>"],
-            echo=False,
-        )
-
-        text = output["choices"][0]["text"].strip()
-        usage = output.get("usage", {})
-
-        return {
-            "text": text,
-            "prompt_tokens": usage.get("prompt_tokens", max(1, len(prompt) // 4)),
-            "completion_tokens": usage.get("completion_tokens", max(1, len(text) // 4)),
-            "model_used": model_name
-        }
+        try:
+            # Use native GGUF chat template completion
+            output = llm.create_chat_completion(
+                messages=messages,
+                max_tokens=max_tokens,
+                temperature=max(temperature, 0.01),
+            )
+            choice = output["choices"][0]
+            text = choice.get("message", {}).get("content", "").strip()
+            usage = output.get("usage", {})
+            return {
+                "text": text,
+                "prompt_tokens": usage.get("prompt_tokens", 0),
+                "completion_tokens": usage.get("completion_tokens", 0),
+                "model_used": model_name
+            }
+        except Exception as e:
+            logger.warning("Native chat completion failed (%s). Falling back to raw prompt format.", e)
+            prompt = self.format_prompt(messages)
+            output = llm(
+                prompt,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                stop=["<<USER>>", "<<SYSTEM>>"],
+                echo=False,
+            )
+            text = output["choices"][0]["text"].strip()
+            usage = output.get("usage", {})
+            return {
+                "text": text,
+                "prompt_tokens": usage.get("prompt_tokens", max(1, len(prompt) // 4)),
+                "completion_tokens": usage.get("completion_tokens", max(1, len(text) // 4)),
+                "model_used": model_name
+            }
 
 
 engine = MultiModelEngine()

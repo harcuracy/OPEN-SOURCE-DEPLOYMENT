@@ -18,7 +18,7 @@ class Config:
     # Inference settings
     N_CTX = int(os.getenv("MODEL_N_CTX", 4096))
     N_THREADS = int(os.getenv("MODEL_N_THREADS", 8))
-    N_GPU_LAYERS = int(os.getenv("MODEL_N_GPU_LAYERS", 0))
+    N_GPU_LAYERS = int(os.getenv("MODEL_N_GPU_LAYERS", -1))
     N_BATCH = int(os.getenv("MODEL_N_BATCH", 256))
 
     # Maximum number of models to keep in VRAM/RAM simultaneously (evicts least recently used)
