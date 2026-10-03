@@ -17,12 +17,29 @@ class KokoroTTSEngine:
         if self.kokoro is not None:
             return self.kokoro
 
-        if not Path(Config.MODEL_PATH).exists() or not Path(Config.VOICES_PATH).exists():
-            raise FileNotFoundError(
-                f"Kokoro model files not found! Ensure '{Config.MODEL_PATH}' and '{Config.VOICES_PATH}' exist."
-            )
+        model_p = Path(Config.MODEL_PATH)
+        voices_p = Path(Config.VOICES_PATH)
+        model_p.parent.mkdir(parents=True, exist_ok=True)
 
-        from kokoro_onnx import Kokoro
+        if not model_p.exists():
+            import urllib.request
+            logger.info("Kokoro model not found on disk. Auto-downloading kokoro-v0_19.onnx (325 MB)...")
+            url = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/kokoro-v0_19.onnx"
+            urllib.request.urlretrieve(url, str(model_p))
+            logger.info("Kokoro ONNX model downloaded successfully.")
+
+        if not voices_p.exists():
+            import urllib.request
+            logger.info("Kokoro voices not found on disk. Auto-downloading voices-v1.0.bin (28 MB)...")
+            url = "https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0/voices-v1.0.bin"
+            urllib.request.urlretrieve(url, str(voices_p))
+            logger.info("Kokoro voices downloaded successfully.")
+
+        try:
+            from kokoro_onnx import Kokoro
+        except Exception as e:
+            logger.error("Failed to import kokoro_onnx (%s). If on Linux, run: apt-get install -y espeak-ng", e)
+            raise
 
         logger.info("Loading Kokoro ONNX model from %s...", Config.MODEL_PATH)
         self.kokoro = Kokoro(str(Config.MODEL_PATH), str(Config.VOICES_PATH))
