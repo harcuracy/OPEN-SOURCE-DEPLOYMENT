@@ -53,7 +53,12 @@ if not kokoro_voices.exists():
 print("Kokoro assets ready.")
 EOF
 
-echo "=== 4. GPU Verification ==="
+echo "=== 4. Environment & GPU Verification ==="
+if [ ! -f .env ] && [ -f .env.example ]; then
+    echo "Creating .env from .env.example..."
+    cp .env.example .env
+fi
+
 if command -v nvidia-smi &> /dev/null; then
     nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader
     echo "NVIDIA GPU Detected! Enabling CUDA GPU offloading in .env..."
