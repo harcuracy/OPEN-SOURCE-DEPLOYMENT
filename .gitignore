@@ -1,41 +1,47 @@
-# ===============================
-# Python
-# ===============================
+# Python cache
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
 
-# Virtual environments (VERY IMPORTANT)
-venv/
-env/
-.venv/
+# Virtual environments
 appgguf/
+venv/
+.venv/
+env/
 
-# ===============================
-# Environment variables
-# ===============================
+# Secret environment variables
 .env
+.env.*
+!.env.example
 
-# ===============================
-# Models (GGUF can be huge)
-# ===============================
-models/*.gguf
+# Large model binaries and downloads (Must never be committed to Git)
+models/**
+!models/
+!models/.gitkeep
+!models/kokoro/
+!models/kokoro/.gitkeep
+!models/whisper/
+!models/whisper/.gitkeep
 
-# ===============================
-# RAG / data
-# ===============================
+*.gguf
+*.onnx
+*.bin
+*.safetensors
+*.pth
+*.pt
+
+# Audio files
+*.wav
+*.mp3
+*.m4a
+*.webm
+*.ogg
+*.flac
+
+# Local databases & storage
 data/*.db
-uploads/
+*.db
 
-# ===============================
-# OS files
-# ===============================
+# Operating System files
 .DS_Store
 Thumbs.db
-
-
-
-
-
-

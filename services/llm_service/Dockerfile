@@ -2,7 +2,6 @@ FROM python:3.10-slim
 
 WORKDIR /app
 
-# System dependencies required for compiling llama-cpp and scientific packages
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     gcc \
@@ -14,8 +13,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN mkdir -p /app/data /app/models
-
 ENV PYTHONUNBUFFERED=1
 
-CMD gunicorn -w 1 -k sync --timeout 180 -b 0.0.0.0:${PORT:-8000} app:app
+CMD python app.py
