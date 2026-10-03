@@ -33,4 +33,12 @@ class Config:
         "qwen-coder": str(resolve_path(os.getenv("MODEL_CODER_PATH", "./models/qwen2.5-coder-7b-instruct.Q4_K_M.gguf"))),
         "phi-3-mini": str(resolve_path(os.getenv("MODEL_FAST_PATH", "./models/phi-3-mini-4k-instruct.Q4_K_M.gguf"))),
     }
+
+    # Per-model physical GPU assignments (for multi-GPU instances: GPU 0, 1, 2)
+    MODEL_GPUS = {
+        "mistral-7b": int(os.getenv("GPU_MISTRAL", 0)),
+        "qwen-coder": int(os.getenv("GPU_CODER", 1)),
+        "phi-3-mini": int(os.getenv("GPU_FAST", 2)),
+    }
+
     DEFAULT_MODEL = os.getenv("DEFAULT_MODEL", "mistral-7b")

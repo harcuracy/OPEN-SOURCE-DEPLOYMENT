@@ -92,8 +92,9 @@ def chat_completions():
         "temperature": float(body.get("temperature", 0.7))
     }
 
+    target_llm_url = Config.get_llm_url(model_name)
     try:
-        resp = requests.post(f"{Config.LLM_SERVICE_URL}/generate", json=payload, timeout=180)
+        resp = requests.post(f"{target_llm_url}/generate", json=payload, timeout=180)
         if resp.status_code != 200:
             err = resp.json() if resp.headers.get("content-type") == "application/json" else {"error": resp.text}
             return jsonify({"error": {"message": err.get("error", "LLM service error"), "type": "upstream_error"}}), resp.status_code

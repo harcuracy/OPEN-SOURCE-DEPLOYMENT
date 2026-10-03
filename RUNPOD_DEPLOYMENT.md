@@ -206,6 +206,41 @@ CUDA_VISIBLE_DEVICES=1 python services/stt_service/app.py > stt.log 2>&1 &
 python services/gateway/app.py > gateway.log 2>&1 &
 ```
 
+---
+
+## Strategy C: Running EACH Model in a Different GPU
+
+If you want to run **3 different LLM models** (e.g. Mistral 7B, Qwen Coder, and Phi-3) each on its own dedicated GPU so they never fight for VRAM:
+
+### Option 1: 1 Pod with 3 or 4 GPUs (e.g., 3x or 4x RTX 3090)
+In this setup, our `services/llm_service/engine.py` assigns each model to a dedicated physical GPU index via `llama.cpp`'s native `main_gpu` parameter.
+
+In `.env`, configure the physical GPU ID for each model:
+```env
+# Physical GPU assignments:
+GPU_MISTRAL=0    # Mistral 7B loads into GPU 0
+GPU_CODER=1      # Qwen Coder loads into GPU 1
+GPU_FAST=2       # Phi-3 Mini loads into GPU 2
+```
+When a client requests `mistral-7b`, it executes on GPU 0. When another client requests `qwen-coder`, it executes in parallel on GPU 1. Neither model is evicted from VRAM!
+
+### Option 2: 3 Separate RunPod Pods (1 GPU per Pod)
+If you rent 3 separate RunPod Pods (each with 1 GPU):
+- **Pod 1:** Runs `llm_service` hosting Mistral ➡️ `https://pod1-8002.proxy.runpod.net`
+- **Pod 2:** Runs `llm_service` hosting Qwen Coder ➡️ `https://pod2-8002.proxy.runpod.net`
+- **Pod 3:** Runs `llm_service` hosting Phi-3 Mini ➡️ `https://pod3-8002.proxy.runpod.net`
+
+In the **API Gateway's `.env`**, add the per-model routes:
+```env
+MODEL_MISTRAL_URL=https://pod1-8002.proxy.runpod.net
+MODEL_CODER_URL=https://pod2-8002.proxy.runpod.net
+MODEL_FAST_URL=https://pod3-8002.proxy.runpod.net
+```
+The Gateway automatically inspects the `"model"` field in the client's request:
+- `"model": "mistral-7b"` ➡️ Dispatched directly to Pod 1.
+- `"model": "qwen-coder"` ➡️ Dispatched directly to Pod 2.
+- `"model": "phi-3-mini"` ➡️ Dispatched directly to Pod 3.
+
 4. Verify GPU memory distribution:
    ```bash
    nvidia-smi

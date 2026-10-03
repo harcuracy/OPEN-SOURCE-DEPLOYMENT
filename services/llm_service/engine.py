@@ -81,8 +81,9 @@ class MultiModelEngine:
 
         from llama_cpp import Llama
 
-        logger.info("Loading model '%s' from %s (threads=%d, ctx=%d, gpu_layers=%d)...",
-                    model_name, model_path, Config.N_THREADS, Config.N_CTX, Config.N_GPU_LAYERS)
+        target_gpu = Config.MODEL_GPUS.get(model_name.lower(), 0)
+        logger.info("Loading model '%s' from %s (GPU=%d, threads=%d, ctx=%d, gpu_layers=%d)...",
+                    model_name, model_path, target_gpu, Config.N_THREADS, Config.N_CTX, Config.N_GPU_LAYERS)
 
         instance = Llama(
             model_path=model_path,
@@ -90,6 +91,7 @@ class MultiModelEngine:
             n_threads=Config.N_THREADS,
             n_gpu_layers=Config.N_GPU_LAYERS,
             n_batch=Config.N_BATCH,
+            main_gpu=target_gpu,
             verbose=False,
         )
 
