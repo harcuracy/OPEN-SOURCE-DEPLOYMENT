@@ -85,15 +85,18 @@ class MultiModelEngine:
         logger.info("Loading model '%s' from %s (GPU=%d, threads=%d, ctx=%d, gpu_layers=%d)...",
                     model_name, model_path, target_gpu, Config.N_THREADS, Config.N_CTX, Config.N_GPU_LAYERS)
 
-        instance = Llama(
-            model_path=model_path,
-            n_ctx=Config.N_CTX,
-            n_threads=Config.N_THREADS,
-            n_gpu_layers=Config.N_GPU_LAYERS,
-            n_batch=Config.N_BATCH,
-            main_gpu=target_gpu,
-            verbose=False,
-        )
+        llama_kwargs = {
+            "model_path": model_path,
+            "n_ctx": Config.N_CTX,
+            "n_threads": Config.N_THREADS,
+            "n_gpu_layers": Config.N_GPU_LAYERS,
+            "n_batch": Config.N_BATCH,
+            "verbose": False,
+        }
+        if target_gpu > 0:
+            llama_kwargs["main_gpu"] = target_gpu
+
+        instance = Llama(**llama_kwargs)
 
         self.loaded_models[model_name] = instance
         logger.info("Model '%s' loaded successfully.", model_name)
