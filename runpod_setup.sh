@@ -25,6 +25,8 @@ pip install llama-cpp-python \
 CMAKE_ARGS="-DGGML_CUDA=on" pip install llama-cpp-python --no-cache-dir
 
 # Install Faster-Whisper, Kokoro TTS, Gateway, and server utilities
+# Note: --ignore-installed blinker avoids Ubuntu dist-packages RECORD conflict
+pip install --ignore-installed blinker
 pip install faster-whisper kokoro-onnx soundfile flask waitress requests python-dotenv
 
 echo "=== 3. Ensuring Model Directories & Kokoro Weights ==="
